@@ -3,7 +3,7 @@ const http = require("http");
 
 const USER = process.env.SP_USER;
 const PASS = process.env.SP_PASS;
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 
 const BASIC = "Basic " + Buffer.from(`${USER}:${PASS}`).toString("base64");
 
