@@ -1,8 +1,8 @@
 const https = require("https");
 const http = require("http");
 
-const USER = process.env.SP_USER;
-const PASS = process.env.SP_PASS;
+const USER = process.env.USER;
+const PASS = process.env.PASS;
 const PORT = process.env.PORT;
 const HOST = "api.ci.spglobal.com";
 console.log("AUTH TEST:", Buffer.from(`${USER}:${PASS}`).toString("base64"));
