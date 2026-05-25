@@ -5,7 +5,7 @@ const USER = process.env.SP_USER;
 const PASS = process.env.SP_PASS;
 const PORT = process.env.PORT;
 const HOST = "api.ci.spglobal.com";
-
+console.log("AUTH TEST:", Buffer.from(`${USER}:${PASS}`).toString("base64"));
 const BASIC = "Basic " + Buffer.from(`${USER}:${PASS}`).toString("base64");
 
 function apiGet(path) {
