@@ -1,0 +1,21 @@
+{
+  "name": "spglobalproxy",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/ubongedem78/a-proxy#readme",
+  "bugs": {
+    "url": "https://github.com/ubongedem78/a-proxy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ubongedem78/a-proxy.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  }
+}
