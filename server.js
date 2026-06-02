@@ -230,7 +230,7 @@ const server = http.createServer(async (req, res) => {
   if (req.url === "/" || req.url === "/ticker") {
     res.writeHead(200, {
       "Content-Type": "text/html; charset=utf-8",
-      "X-Frame-Options": "ALLOW-FROM *",
+      // "X-Frame-Options": "ALLOW-FROM *",
       // "Content-Security-Policy": "frame-ancestors *",
       "Content-Security-Policy":
         "frame-ancestors 'self' https://*.sharepoint.com https://*.sharepoint-df.com https://*.office.com https://*.microsoft.com",
