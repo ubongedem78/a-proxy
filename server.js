@@ -230,7 +230,7 @@ const server = http.createServer(async (req, res) => {
   if (req.url === "/" || req.url === "/ticker") {
     res.writeHead(200, {
       "Content-Type": "text/html; charset=utf-8",
-      "X-Frame-Options": "ALLOWALL",
+      "X-Frame-Options": "ALLOW-FROM *",
       "Content-Security-Policy": "frame-ancestors *",
     });
     return res.end(TICKER_HTML);
