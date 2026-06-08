@@ -8,7 +8,26 @@ const HOST = "api.ci.spglobal.com";
 
 console.log("AUTH TEST:", Buffer.from(`${USER}:${PASS}`).toString("base64"));
 const BASIC = "Basic " + Buffer.from(`${USER}:${PASS}`).toString("base64");
-
+const COMMODITIES = [
+  { symbol: "PCAAS00", name: "Dated Brent", unit: "$/bbl" },
+  { symbol: "PCACG00", name: "WTI Cushing", unit: "$/bbl" },
+  { symbol: "AAEUQ00", name: "OPEC Basket", unit: "$/bbl" },
+  { symbol: "AWAFA00", name: "WAF Index", unit: "$/bbl" },
+  { symbol: "PCAAT00", name: "Dubai Mo01", unit: "$/bbl" },
+  { symbol: "AAQZB00", name: "Agbami FOB", unit: "$/bbl" },
+  { symbol: "PCNGA00", name: "Akpo FOB", unit: "$/bbl" },
+  { symbol: "PCAIC00", name: "Bonny Light FOB", unit: "$/bbl" },
+  { symbol: "PCNGC00", name: "Bonga FOB", unit: "$/bbl" },
+  { symbol: "AFONA00", name: "Egina FOB", unit: "$/bbl" },
+  { symbol: "AAEIZ00", name: "Escravos FOB", unit: "$/bbl" },
+  { symbol: "AAXUO00", name: "Erha FOB", unit: "$/bbl" },
+  { symbol: "PCABC00", name: "Forcados FOB", unit: "$/bbl" },
+  { symbol: "PCAID00", name: "Qua Iboe FOB", unit: "$/bbl" },
+  { symbol: "AAXUQ00", name: "Usan FOB", unit: "$/bbl" },
+  { symbol: "DTMSC01", name: "Dutch TTF", unit: "$/MMBtu" },
+  { symbol: "AAOVQ00", name: "LNG Japan/Korea", unit: "$/MMBtu" },
+  { symbol: "AASYR00", name: "NBP London", unit: "$/MMBtu" },
+];
 const TICKER_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -230,67 +249,44 @@ const server = http.createServer(async (req, res) => {
   if (req.url === "/" || req.url === "/ticker") {
     res.writeHead(200, {
       "Content-Type": "text/html; charset=utf-8",
-      // "X-Frame-Options": "ALLOW-FROM *",
-      // "Content-Security-Policy": "frame-ancestors *",
       "Content-Security-Policy":
         "frame-ancestors 'self' https://*.sharepoint.com https://*.sharepoint-df.com https://*.office.com https://*.microsoft.com",
     });
+
     return res.end(TICKER_HTML);
   }
-
-  if (req.url === "/api/prices") {
+  if (req.url === "/api/ticker") {
     try {
-      const today = new Date().toISOString().slice(0, 10);
-
-      const twoWeeksAgo = (() => {
-        const d = new Date();
-        d.setDate(d.getDate() - 14);
-        return d.toISOString().slice(0, 10);
-      })();
-
-      const symbols = [
-        "PCAAS00",
-        "PCACG00",
-        "AAEUQ00",
-        "AWAFA00",
-        "PCAAT00",
-        "AAQZB00",
-        "PCNGA00",
-        "PCAIC00",
-        "PCNGC00",
-        "AFONA00",
-        "AAEIZ00",
-        "AAXUO00",
-        "PCABC00",
-        "PCAID00",
-        "AAXUQ00",
-        "NMNG001",
-        "DTMSC01",
-        "AAOVQ00",
-        "AASYR00",
-      ];
-
       const filter = encodeURIComponent(
-        `symbol IN (${symbols.map((s) => `"${s}"`).join(",")})`,
+        `symbol IN (${COMMODITIES.map((c) => `"${c.symbol}"`).join(",")})`,
       );
 
-      const [current, history] = await Promise.all([
-        apiGet(`/market-data/v3/value/current/symbol?filter=${filter}`),
-        apiGet(
-          `/market-data/v3/value/history/symbol?filter=${filter}&page_size=2000`,
-        ),
-      ]);
+      const current = await apiGet(
+        `/market-data/v3/value/current/symbol?filter=${filter}`,
+      );
+
+      const results = COMMODITIES.map((item) => {
+        const record = current.body.results?.find(
+          (r) => r.symbol === item.symbol,
+        );
+
+        const value =
+          record?.data?.find((x) => x.bate === "c") || record?.data?.[0];
+
+        return {
+          symbol: item.symbol,
+          name: item.name,
+          unit: item.unit,
+          price: value?.value ?? null,
+          assessDate: value?.assessDate ?? null,
+        };
+      });
 
       res.writeHead(200, {
         "Content-Type": "application/json",
       });
 
-      return res.end(
-        JSON.stringify({
-          current: current.body,
-          history: history.body,
-        }),
-      );
+      return res.end(JSON.stringify(results));
     } catch (err) {
       res.writeHead(500, {
         "Content-Type": "application/json",
@@ -343,7 +339,8 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(404, { "Content-Type": "application/json" });
     return res.end(
       JSON.stringify({
-        error: "Not found. Valid paths: /market-data/*, /debug",
+        error:
+          "Not found. Valid paths: /ticker, /api/ticker, /market-data/*, /debug",
       }),
     );
   }
