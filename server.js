@@ -238,6 +238,72 @@ const server = http.createServer(async (req, res) => {
     return res.end(TICKER_HTML);
   }
 
+  if (req.url === "/api/prices") {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+
+      const twoWeeksAgo = (() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 14);
+        return d.toISOString().slice(0, 10);
+      })();
+
+      const symbols = [
+        "PCAAS00",
+        "PCACG00",
+        "AAEUQ00",
+        "AWAFA00",
+        "PCAAT00",
+        "AAQZB00",
+        "PCNGA00",
+        "PCAIC00",
+        "PCNGC00",
+        "AFONA00",
+        "AAEIZ00",
+        "AAXUO00",
+        "PCABC00",
+        "PCAID00",
+        "AAXUQ00",
+        "NMNG001",
+        "DTMSC01",
+        "AAOVQ00",
+        "AASYR00",
+      ];
+
+      const filter = encodeURIComponent(
+        `symbol IN (${symbols.map((s) => `"${s}"`).join(",")})`,
+      );
+
+      const [current, history] = await Promise.all([
+        apiGet(`/market-data/v3/value/current/symbol?filter=${filter}`),
+        apiGet(
+          `/market-data/v3/value/history/symbol?filter=${filter}&page_size=2000`,
+        ),
+      ]);
+
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+      });
+
+      return res.end(
+        JSON.stringify({
+          current: current.body,
+          history: history.body,
+        }),
+      );
+    } catch (err) {
+      res.writeHead(500, {
+        "Content-Type": "application/json",
+      });
+
+      return res.end(
+        JSON.stringify({
+          error: err.message,
+        }),
+      );
+    }
+  }
+
   if (req.url === "/debug") {
     const today = new Date().toISOString().slice(0, 10);
     const twoWeeksAgo = (() => {
